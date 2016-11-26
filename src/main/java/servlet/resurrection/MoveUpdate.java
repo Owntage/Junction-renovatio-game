@@ -21,6 +21,14 @@ public class MoveUpdate implements Update {
         this.id = id;
     }
 
+    public MoveUpdate(JSONObject obj) throws JSONException {
+        positionX = Float.parseFloat(obj.getString(ResurrectionConstants.Json.POSITION_X));
+        positionY = Float.parseFloat(obj.getString(ResurrectionConstants.Json.POSITION_Y));
+        velocityX = Float.parseFloat(obj.getString(ResurrectionConstants.Json.VELOCITY_X));
+        velocityY = Float.parseFloat(obj.getString(ResurrectionConstants.Json.VELOCITY_Y));
+        id = Integer.parseInt(obj.getString(ResurrectionConstants.Json.PLAYER_ID));
+    }
+
     @Override
     public JSONObject getJsonObject() throws JSONException {
         JSONObject result = new JSONObject();

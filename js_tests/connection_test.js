@@ -12,7 +12,12 @@ http.onreadystatechange = function() {//Call a function when the state changes.
 }
 
 var requestBody = {
-	type : "Connection"
+	type : "Connection",
+	id : "1",
+	velX : "0",
+	velY : "0",
+	x : "0",
+	y : "0"
 }
 
 

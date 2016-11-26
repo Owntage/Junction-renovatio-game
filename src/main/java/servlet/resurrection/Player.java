@@ -17,6 +17,12 @@ public class Player {
     public final Lock lock = new ReentrantLock();
     public final ArrayList<Update> pendingUpdates = new ArrayList<>();
     public volatile AsyncContext asyncContext = null;
+    public final int id;
+
+    public Player(int id) {
+        this.id = id;
+    }
+
     public void sendUpdate(Update update)
             throws JSONException, IOException {
         if(asyncContext == null) {

@@ -20,6 +20,7 @@ import javax.servlet.http.HttpServletResponse;
 
 @WebServlet(
         name = "ResurrectionServlet",
+        asyncSupported = true,
         urlPatterns = {"/resurrection-game"}
 )
 public class ResurrectionServlet extends HttpServlet {
@@ -29,6 +30,7 @@ public class ResurrectionServlet extends HttpServlet {
     final Timer timer = new Timer();
 
     final long SECOND = 1000;
+    final long TIMEOUT_IN_SECONDS = 10; //todo should be replaced with some small value
     final String EMPTY_UPDATE_ARRAY = "{\"" + ResurrectionConstants.Json.UPDATE_ARRAY + "\":[]}";
 
     @Override
@@ -68,7 +70,9 @@ public class ResurrectionServlet extends HttpServlet {
             throws IOException, JSONException {
         System.out.println("connection request");
         JSONObject respJson = new JSONObject();
-        respJson.put(ResurrectionConstants.Json.PLAYER_ID, playerCounter.getAndIncrement());
+        Player player = new Player(playerCounter.getAndIncrement());
+        players.put(player.id, player);
+        respJson.put(ResurrectionConstants.Json.PLAYER_ID, player.id);
         resp.getWriter().write(respJson.toString());
         resp.getWriter().flush();
     }
@@ -77,6 +81,14 @@ public class ResurrectionServlet extends HttpServlet {
             throws IOException, JSONException {
         System.out.println("directionChangeRequest: " + jsonObj.toString());
         //todo send this update to all players.
+        MoveUpdate moveUpdate = new MoveUpdate(jsonObj);
+        for(Player player : players.values()) {
+            if(player.id != moveUpdate.id) {
+                player.lock.lock();
+                player.sendUpdate(moveUpdate);
+                player.lock.unlock();
+            }
+        }
     }
 
     private void onGetUpdateRequest(final HttpServletRequest req, final HttpServletResponse resp, JSONObject jsonObj)
@@ -87,9 +99,11 @@ public class ResurrectionServlet extends HttpServlet {
         if(player.pendingUpdates.size() > 0) {
             JSONObject respJson = new JSONObject();
             respJson.put(ResurrectionConstants.Json.UPDATE_ARRAY, player.getPendingUpdatesJsonArray());
+            player.pendingUpdates.clear();
             resp.getWriter().write(respJson.toString());
         } else {
             player.asyncContext = req.startAsync(req, resp);
+            player.asyncContext.setTimeout(SECOND * TIMEOUT_IN_SECONDS * 2);
             timer.schedule(new TimerTask(){
                 @Override
                 public void run() {
@@ -107,8 +121,9 @@ public class ResurrectionServlet extends HttpServlet {
                     }
                     player.lock.unlock();
                 }
-            }, SECOND * 10);
+            }, SECOND * TIMEOUT_IN_SECONDS);
         }
+        player.lock.unlock();
     }
 
     private String readBody(HttpServletRequest req) throws IOException {
