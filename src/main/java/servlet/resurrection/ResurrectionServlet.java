@@ -116,7 +116,7 @@ public class ResurrectionServlet extends HttpServlet {
         }
         players.put(player.id, player);
         respJson.put(ResurrectionConstants.Json.PLAYER_ID, player.id);
-        System.out.println("player was put in map");
+        System.out.println("player was put in map. id: " + player.id);
         resp.getWriter().write(respJson.toString());
         resp.getWriter().flush();
     }
@@ -147,7 +147,7 @@ public class ResurrectionServlet extends HttpServlet {
         String id = jsonObj.getString(ResurrectionConstants.Json.PLAYER_ID);
         final Player player = getLockedPlayer(Integer.parseInt(id));
         if(player == null) {
-            System.out.println("getUpdate for player not in map");
+            System.out.println("getUpdate for player not in map. id: " + id);
             return;
         }
         if(player.pendingUpdates.size() > 0) {
