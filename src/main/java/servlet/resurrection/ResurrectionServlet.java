@@ -142,6 +142,7 @@ public class ResurrectionServlet extends HttpServlet {
 
     private void onGetUpdateRequest(final HttpServletRequest req, final HttpServletResponse resp, JSONObject jsonObj)
             throws IOException, JSONException {
+        System.out.println("getUpdateRequest");
         String id = jsonObj.getString(ResurrectionConstants.Json.PLAYER_ID);
         final Player player = getLockedPlayer(Integer.parseInt(id));
         if(player == null) return;
