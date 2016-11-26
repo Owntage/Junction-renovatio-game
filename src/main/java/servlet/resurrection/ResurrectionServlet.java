@@ -145,8 +145,12 @@ public class ResurrectionServlet extends HttpServlet {
         System.out.println("getUpdateRequest");
         String id = jsonObj.getString(ResurrectionConstants.Json.PLAYER_ID);
         final Player player = getLockedPlayer(Integer.parseInt(id));
-        if(player == null) return;
+        if(player == null) {
+            System.out.println("getUpdate for player not in map");
+            return;
+        }
         if(player.pendingUpdates.size() > 0) {
+            System.out.println("pendingUpdates is not empty. sending them");
             JSONObject respJson = new JSONObject();
             respJson.put(ResurrectionConstants.Json.UPDATE_ARRAY, player.getPendingUpdatesJsonArray());
             player.pendingUpdates.clear();
