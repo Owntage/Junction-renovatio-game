@@ -34,6 +34,8 @@ public class ResurrectionServlet extends HttpServlet {
     final Timer timer = new Timer();
 
     final long SECOND = 1000;
+    final int PLAYER_HP = 3;
+    final int RENOVATIO_ID = -1337;
     final long TIMEOUT_IN_SECONDS = 10; //todo should be replaced with some small value
     final long DISCONNECT_TIMEOUT_IN_SECONDS = 30;
     final String EMPTY_UPDATE_ARRAY = "{\"" + ResurrectionConstants.Json.UPDATE_ARRAY + "\":[]}";
@@ -92,6 +94,10 @@ public class ResurrectionServlet extends HttpServlet {
                     onDirectionChangeRequest(req, resp, jsonObject);
                     break;
                 }
+                case ResurrectionConstants.Requests.HIT_REQUEST: {
+                    onHitRequest(req, resp, jsonObject);
+                    break;
+                }
 
                 default : {
                     sendErrorResponse(resp, "no such type of request. your json: " + jsonObject.toString());
@@ -108,7 +114,7 @@ public class ResurrectionServlet extends HttpServlet {
             throws IOException, JSONException {
         System.out.println("connection request");
         JSONObject respJson = new JSONObject();
-        Player player = new Player(playerCounter.getAndIncrement());
+        Player player = new Player(playerCounter.getAndIncrement(), PLAYER_HP);
         for(Player otherPlayer : players.values()) {
             if(otherPlayer.lastMoveUpdate != null) {
                 player.pendingUpdates.add(new MoveUpdate(otherPlayer.lastMoveUpdate, time.get()));
@@ -139,6 +145,35 @@ public class ResurrectionServlet extends HttpServlet {
                 player.lock.unlock();
             }
         }
+    }
+
+    private void onHitRequest(final HttpServletRequest req, final HttpServletResponse resp, JSONObject jsonObj)
+            throws IOException, JSONException {
+        int id = Integer.parseInt(jsonObj.getString(ResurrectionConstants.Json.PLAYER_ID));
+        for(Player player : players.values()) {
+            if(id != player.id) {
+                player.lock.lock();
+                player.sendUpdate(new AnimationUpdate(id));
+                player.lock.unlock();
+            }
+        }
+
+        int damage = Integer.parseInt(jsonObj.getString(ResurrectionConstants.Json.DAMAGE));
+        if(damage > 0) {
+            int targetId = Integer.parseInt(jsonObj.getString(ResurrectionConstants.Json.TARGET_ID));
+            Player targetPlayer = getLockedPlayer(targetId);
+            if(targetPlayer == null) return;
+            targetPlayer.hp -= damage; //todo do some special checks for renovatio
+            for(Player player : players.values()) {
+                if(player.id == targetId) continue;
+                player.lock.lock();
+
+                player.sendUpdate(new HealthUpdate(targetId, targetPlayer.hp));
+
+                player.lock.unlock();
+            }
+        }
+
     }
 
     private void onGetUpdateRequest(final HttpServletRequest req, final HttpServletResponse resp, JSONObject jsonObj)

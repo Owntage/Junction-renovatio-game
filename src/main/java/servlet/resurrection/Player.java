@@ -20,11 +20,13 @@ public class Player {
     public final ArrayList<Update> pendingUpdates = new ArrayList<>();
     public volatile AsyncContext asyncContext = null;
     public final int id;
+    public volatile int hp;
     public volatile boolean notUpdating = false;
     public volatile MoveUpdate lastMoveUpdate = null;
 
-    public Player(int id) {
+    public Player(int id, int hp) {
         this.id = id;
+        this.hp = hp;
     }
 
     public void sendUpdate(Update update)

@@ -6,6 +6,8 @@ package servlet.resurrection;
 public interface ResurrectionConstants {
     interface Json {
         String PLAYER_ID = "id";
+        String TARGET_ID = "targetID";
+        String DAMAGE = "damage";
         String TYPE = "type";
         String VELOCITY_X = "velX";
         String VELOCITY_Y = "velY";
@@ -18,9 +20,13 @@ public interface ResurrectionConstants {
         String CONNECT = "Connection";
         String UPDATE_REQUEST = "Update";
         String DIRECTION_CHANGE = "SelfUpdate";
+        String HIT_REQUEST = "Hit";
     }
     interface Updates {
         String MOVE_UPDATE = "update";
         String DESTROY_UPDATE = "destroy";
+        String ANIMATION_UPDATE = "hitAnim";
+        String HEALTH_UPDATE = "health";
+
     }
 }
