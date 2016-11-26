@@ -6,9 +6,11 @@ import servlet.mafia.MafiaException;
 
 import java.io.IOException;
 import java.io.Reader;
+import java.util.ArrayList;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Phaser;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -33,17 +35,40 @@ public class ResurrectionServlet extends HttpServlet {
 
     final long SECOND = 1000;
     final long TIMEOUT_IN_SECONDS = 10; //todo should be replaced with some small value
+    final long DISCONNECT_TIMEOUT_IN_SECONDS = 30;
     final String EMPTY_UPDATE_ARRAY = "{\"" + ResurrectionConstants.Json.UPDATE_ARRAY + "\":[]}";
 
     @Override
     public void init() throws ServletException {
-       timer.schedule(new TimerTask(){
+        timer.schedule(new TimerTask(){
 
            @Override
            public void run() {
                time.getAndIncrement();
            }
-       }, MoveUpdate.TICK_DELTA, MoveUpdate.TICK_DELTA);
+        }, MoveUpdate.TICK_DELTA, MoveUpdate.TICK_DELTA);
+        timer.schedule(new TimerTask(){
+            @Override
+            public void run() {
+                ArrayList<Player> disconnectedPlayers = new ArrayList<>();
+                for(Player player : players.values()) {
+                    player.lock.lock();
+                    if(!player.notUpdating) {
+                        player.notUpdating = true;
+                        player.lock.unlock();
+                    } else {
+                        sendDisconnectMessage(player.id);
+                        disconnectedPlayers.add(player);
+                    }
+
+
+                }
+                for(Player disconnectedPlayer : disconnectedPlayers) {
+                    players.remove(disconnectedPlayer.id);
+                    disconnectedPlayer.lock.unlock();
+                }
+            }
+        }, DISCONNECT_TIMEOUT_IN_SECONDS, DISCONNECT_TIMEOUT_IN_SECONDS);
     }
 
     @Override
@@ -103,6 +128,7 @@ public class ResurrectionServlet extends HttpServlet {
         Player thisPlayer = getLockedPlayer(moveUpdate.id);
         if(thisPlayer == null) return;
         thisPlayer.lastMoveUpdate = moveUpdate;
+        thisPlayer.notUpdating = false;
 
         thisPlayer.lock.unlock();
         for(Player player : players.values()) {
@@ -147,6 +173,18 @@ public class ResurrectionServlet extends HttpServlet {
             }, SECOND * TIMEOUT_IN_SECONDS);
         }
         player.lock.unlock();
+    }
+
+    private void sendDisconnectMessage(int disconnectedId) {
+        for(Player player : players.values()) {
+            if(player.id != disconnectedId) {
+                try {
+                    player.sendUpdate(new DisconnectUpdate(disconnectedId));
+                } catch (JSONException | IOException e) {
+                    //we can do nothing
+                }
+            }
+        }
     }
 
     private String readBody(HttpServletRequest req) throws IOException {

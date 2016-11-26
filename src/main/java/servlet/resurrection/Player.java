@@ -20,6 +20,7 @@ public class Player {
     public final ArrayList<Update> pendingUpdates = new ArrayList<>();
     public volatile AsyncContext asyncContext = null;
     public final int id;
+    public volatile boolean notUpdating = false;
     public volatile MoveUpdate lastMoveUpdate = null;
 
     public Player(int id) {
