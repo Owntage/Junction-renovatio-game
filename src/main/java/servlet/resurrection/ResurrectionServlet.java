@@ -68,7 +68,7 @@ public class ResurrectionServlet extends HttpServlet {
                     disconnectedPlayer.lock.unlock();
                 }
             }
-        }, DISCONNECT_TIMEOUT_IN_SECONDS, DISCONNECT_TIMEOUT_IN_SECONDS);
+        }, DISCONNECT_TIMEOUT_IN_SECONDS * SECOND, DISCONNECT_TIMEOUT_IN_SECONDS * SECONDS);
     }
 
     @Override
