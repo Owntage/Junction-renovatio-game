@@ -7,6 +7,8 @@ import org.json.JSONObject;
 import javax.servlet.AsyncContext;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -43,9 +45,19 @@ public class Player {
     }
     public JSONArray getPendingUpdatesJsonArray() throws JSONException {
         JSONArray res = new JSONArray();
+        HashMap<Integer, Update> moveUpdates = new HashMap<>();
         for(Update update : pendingUpdates) {
+            if(update instanceof MoveUpdate) {
+                MoveUpdate moveUpdate = (MoveUpdate) update;
+                moveUpdates.put(moveUpdate.id, moveUpdate);
+            } else {
+                res.put(update.getJsonObject());
+            }
+        }
+        for(Update update : moveUpdates.values()) {
             res.put(update.getJsonObject());
         }
+
         return res;
     }
 }
