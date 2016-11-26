@@ -116,6 +116,7 @@ public class ResurrectionServlet extends HttpServlet {
         }
         players.put(player.id, player);
         respJson.put(ResurrectionConstants.Json.PLAYER_ID, player.id);
+        System.out.println("player was put in map");
         resp.getWriter().write(respJson.toString());
         resp.getWriter().flush();
     }
