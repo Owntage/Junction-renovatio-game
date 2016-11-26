@@ -17,7 +17,7 @@ import javax.servlet.http.HttpServletResponse;
 
 @WebServlet(
         name = "ResurrectionServlet",
-        urlPatterns = {"/resurrection"}
+        urlPatterns = {"/resurrection-game"}
 )
 public class ResurrectionServlet extends HttpServlet {
 
