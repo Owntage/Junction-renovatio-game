@@ -10,5 +10,6 @@ public interface ResurrectionConstants {
     }
     interface Requests {
         String CONNECT = "Connection";
+        String UPDATE_REQUEST = "Update";
     }
 }

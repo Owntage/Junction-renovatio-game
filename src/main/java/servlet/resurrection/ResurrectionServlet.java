@@ -51,7 +51,7 @@ public class ResurrectionServlet extends HttpServlet {
     private void onConnectionRequest(final HttpServletRequest req, final HttpServletResponse resp, JSONObject jsonObj)
             throws IOException, JSONException {
         JSONObject respJson = new JSONObject();
-        respJson.put(ResurrectionConstants.Json.PLAYER_ID, Integer.toString(playerCounter.getAndIncrement()));
+        respJson.put(ResurrectionConstants.Json.PLAYER_ID, playerCounter.getAndIncrement());
         resp.getWriter().write(respJson.toString());
         resp.getWriter().flush();
     }
