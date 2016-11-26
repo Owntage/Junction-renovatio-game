@@ -10,6 +10,7 @@ import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 
 import javax.servlet.ServletException;
 import javax.servlet.ServletOutputStream;
@@ -27,11 +28,23 @@ public class ResurrectionServlet extends HttpServlet {
 
     final AtomicInteger playerCounter = new AtomicInteger(1);
     final ConcurrentHashMap<Integer, Player>  players = new ConcurrentHashMap<>();
+    final AtomicInteger time = new AtomicInteger();
     final Timer timer = new Timer();
 
     final long SECOND = 1000;
     final long TIMEOUT_IN_SECONDS = 10; //todo should be replaced with some small value
     final String EMPTY_UPDATE_ARRAY = "{\"" + ResurrectionConstants.Json.UPDATE_ARRAY + "\":[]}";
+
+    @Override
+    public void init() throws ServletException {
+       timer.schedule(new TimerTask(){
+
+           @Override
+           public void run() {
+               time.getAndIncrement();
+           }
+       }, MoveUpdate.TICK_DELTA, MoveUpdate.TICK_DELTA);
+    }
 
     @Override
     protected void doPost(final HttpServletRequest req, final HttpServletResponse resp)
@@ -71,6 +84,11 @@ public class ResurrectionServlet extends HttpServlet {
         System.out.println("connection request");
         JSONObject respJson = new JSONObject();
         Player player = new Player(playerCounter.getAndIncrement());
+        for(Player otherPlayer : players.values()) {
+            if(otherPlayer.lastMoveUpdate != null) {
+                player.pendingUpdates.add(new MoveUpdate(otherPlayer.lastMoveUpdate, time.get()));
+            }
+        }
         players.put(player.id, player);
         respJson.put(ResurrectionConstants.Json.PLAYER_ID, player.id);
         resp.getWriter().write(respJson.toString());
@@ -81,7 +99,12 @@ public class ResurrectionServlet extends HttpServlet {
             throws IOException, JSONException {
         System.out.println("directionChangeRequest: " + jsonObj.toString());
         //todo send this update to all players.
-        MoveUpdate moveUpdate = new MoveUpdate(jsonObj);
+        MoveUpdate moveUpdate = new MoveUpdate(jsonObj, time.get());
+        Player thisPlayer = getLockedPlayer(moveUpdate.id);
+        if(thisPlayer == null) return;
+        thisPlayer.lastMoveUpdate = moveUpdate;
+
+        thisPlayer.lock.unlock();
         for(Player player : players.values()) {
             if(player.id != moveUpdate.id) {
                 player.lock.lock();
