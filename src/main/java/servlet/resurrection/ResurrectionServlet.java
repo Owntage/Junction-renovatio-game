@@ -168,7 +168,10 @@ public class ResurrectionServlet extends HttpServlet {
 
         int damage = Integer.parseInt(jsonObj.getString(ResurrectionConstants.Json.DAMAGE));
         if(damage != 0) {
+            System.out.println("damage is not zero");
             int targetId = Integer.parseInt(jsonObj.getString(ResurrectionConstants.Json.TARGET_ID));
+            System.out.println("target: " + targetId);
+            System.out.println("attacker id: " + id);
             Player targetPlayer = getLockedPlayer(targetId);
             if(targetPlayer == null) return;
             targetPlayer.hp -= damage; //todo do some special checks for renovatio
