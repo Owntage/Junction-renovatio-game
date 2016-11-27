@@ -167,7 +167,7 @@ public class ResurrectionServlet extends HttpServlet {
         }
 
         int damage = Integer.parseInt(jsonObj.getString(ResurrectionConstants.Json.DAMAGE));
-        if(damage > 0) {
+        if(damage != 0) {
             int targetId = Integer.parseInt(jsonObj.getString(ResurrectionConstants.Json.TARGET_ID));
             Player targetPlayer = getLockedPlayer(targetId);
             if(targetPlayer == null) return;
