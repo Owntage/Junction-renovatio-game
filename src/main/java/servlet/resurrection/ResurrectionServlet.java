@@ -125,8 +125,9 @@ public class ResurrectionServlet extends HttpServlet {
             if(otherPlayer.lastMoveUpdate != null) {
                 player.pendingUpdates.add(new MoveUpdate(otherPlayer.lastMoveUpdate, time.get()));
             }
-            player.pendingUpdates.add(new HealthUpdate(otherPlayer.id, player.hp));
+            player.pendingUpdates.add(new HealthUpdate(otherPlayer.id, otherPlayer.hp));
         }
+        player.pendingUpdates.add(new HealthUpdate(player.id, player.hp));
         players.put(player.id, player);
         respJson.put(ResurrectionConstants.Json.PLAYER_ID, player.id);
         System.out.println("player was put in map. id: " + player.id);
