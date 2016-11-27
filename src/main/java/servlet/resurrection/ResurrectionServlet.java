@@ -174,9 +174,11 @@ public class ResurrectionServlet extends HttpServlet {
             System.out.println("attacker id: " + id);
             Player targetPlayer = getLockedPlayer(targetId);
             if(targetPlayer == null) return;
+            System.out.println("target player is not null");
             targetPlayer.hp -= damage; //todo do some special checks for renovatio
+            targetPlayer.lock.unlock();
             for(Player player : players.values()) {
-                if(player.id == targetId) continue;
+                //if(player.id == targetId) continue; //it means, that if you damage yourself, you won't get update
                 player.lock.lock();
 
                 player.sendUpdate(new HealthUpdate(targetId, targetPlayer.hp));
