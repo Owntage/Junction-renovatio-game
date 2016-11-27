@@ -34,7 +34,8 @@ public class ResurrectionServlet extends HttpServlet {
     final Timer timer = new Timer();
 
     final long SECOND = 1000;
-    final int PLAYER_HP = 3;
+    final int PLAYER_HP = 1;
+    final int RENOVATIO_HP = 10;
     final int RENOVATIO_ID = -1337;
     final long TIMEOUT_IN_SECONDS = 10; //todo should be replaced with some small value
     final long DISCONNECT_TIMEOUT_IN_SECONDS = 30;
@@ -54,6 +55,9 @@ public class ResurrectionServlet extends HttpServlet {
             public void run() {
                 ArrayList<Player> disconnectedPlayers = new ArrayList<>();
                 for(Player player : players.values()) {
+                    if(player.id == RENOVATIO_ID) {
+                        continue;
+                    }
                     player.lock.lock();
                     if(!player.notUpdating) {
                         player.notUpdating = true;
@@ -71,6 +75,8 @@ public class ResurrectionServlet extends HttpServlet {
                 }
             }
         }, DISCONNECT_TIMEOUT_IN_SECONDS * SECOND, DISCONNECT_TIMEOUT_IN_SECONDS * SECOND);
+
+        players.put(RENOVATIO_ID, new Player(RENOVATIO_ID, RENOVATIO_HP));
     }
 
     @Override
@@ -119,6 +125,7 @@ public class ResurrectionServlet extends HttpServlet {
             if(otherPlayer.lastMoveUpdate != null) {
                 player.pendingUpdates.add(new MoveUpdate(otherPlayer.lastMoveUpdate, time.get()));
             }
+            player.pendingUpdates.add(new HealthUpdate(otherPlayer.id, player.hp));
         }
         players.put(player.id, player);
         respJson.put(ResurrectionConstants.Json.PLAYER_ID, player.id);
