@@ -185,6 +185,7 @@ public class ResurrectionServlet extends HttpServlet {
             System.out.println("getUpdate for player not in map. id: " + id);
             return;
         }
+        player.notUpdating = false;
         if(player.pendingUpdates.size() > 0) {
             System.out.println("pendingUpdates is not empty. sending them");
             JSONObject respJson = new JSONObject();
