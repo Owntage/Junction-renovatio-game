@@ -49,15 +49,20 @@ public class Player {
     public JSONArray getPendingUpdatesJsonArray() throws JSONException {
         JSONArray res = new JSONArray();
         HashMap<Integer, Update> moveUpdates = new HashMap<>();
+        ArrayList<Update> otherUpdates = new ArrayList<>();
         for(Update update : pendingUpdates) {
             if(update instanceof MoveUpdate) {
                 MoveUpdate moveUpdate = (MoveUpdate) update;
                 moveUpdates.put(moveUpdate.id, moveUpdate);
             } else {
-                res.put(update.getJsonObject());
+                //res.put(update.getJsonObject());
+                otherUpdates.add(update);
             }
         }
         for(Update update : moveUpdates.values()) {
+            res.put(update.getJsonObject());
+        }
+        for(Update update : otherUpdates) {
             res.put(update.getJsonObject());
         }
 
